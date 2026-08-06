@@ -222,7 +222,6 @@ function updateTimelineWithEra(year) {
   userEra = era;
   userYear = year;
   
-  // Update timeline nodes
   document.querySelectorAll('.time-node').forEach(node => {
     const nodeYear = parseInt(node.dataset.year);
     if (nodeYear >= era.start && nodeYear <= era.end) {
@@ -233,13 +232,11 @@ function updateTimelineWithEra(year) {
     }
   });
   
-  // Update timeline progress with era color
   const progress = document.querySelector('.timeline-progress');
   if (progress) {
     progress.style.background = `linear-gradient(90deg, ${era.color}, var(--accent))`;
   }
   
-  // Update era indicator
   const indicator = document.getElementById('userEraIndicator');
   const badge = document.getElementById('userEraBadge');
   if (indicator && badge) {
@@ -252,7 +249,6 @@ function updateTimelineWithEra(year) {
     badge.style.background = `rgba(${hexToRgb(era.color)}, 0.1)`;
   }
   
-  // Highlight era segments
   document.querySelectorAll('.era-segment').forEach(segment => {
     const segmentEra = segment.dataset.era;
     if (segmentEra === era.name) {
@@ -311,7 +307,6 @@ function showBirthYearResult(year) {
   
   icon.textContent = milestone.icon || '🖥️';
   
-  // Show era
   const eraLabel = document.querySelector('.era-label');
   if (lang === 'ar') {
     title.textContent = `في عام ${yearDisplay}، كان هذا هو إنجاز الحوسبة!`;
@@ -327,7 +322,6 @@ function showBirthYearResult(year) {
     eraYears.textContent = `${era.start} — ${era.end}`;
   }
   
-  // Set era color
   eraName.style.color = era.color;
   eraName.style.borderColor = era.color;
   eraYears.style.color = era.color;
@@ -339,7 +333,6 @@ function showBirthYearResult(year) {
   resultDiv.classList.remove('hidden');
   resultDiv.style.animation = 'fadeInUp 0.6s ease';
   
-  // Store era for timeline update
   userEra = era;
   userYear = yearDisplay;
   
@@ -393,11 +386,8 @@ function initBirthYearModal() {
     overlay.classList.remove('active');
     document.getElementById('birthResult').classList.add('hidden');
     
-    // Update timeline with user's era
     if (userYear) {
       updateTimelineWithEra(userYear);
-      
-      // Scroll to timeline after a delay
       setTimeout(() => {
         const timelineSection = document.getElementById('timeline');
         if (timelineSection) {
@@ -427,10 +417,8 @@ function addEraIndicators() {
   const lastYear = parseInt(nodes[nodes.length - 1].dataset.year);
   const totalYears = lastYear - firstYear;
   
-  // Remove existing segments
   document.querySelectorAll('.era-segment').forEach(el => el.remove());
   
-  // Create era background segments
   computingEras.forEach(era => {
     if (era.end < firstYear || era.start > lastYear) return;
     
@@ -456,7 +444,6 @@ function addEraIndicators() {
         z-index: 0;
       `;
       
-      // Add era label on hover
       const label = document.createElement('span');
       label.className = 'era-label-tip';
       label.textContent = language === 'ar' ? era.nameAr : era.name;
@@ -721,7 +708,6 @@ document.getElementById("langToggle").addEventListener("click", () => {
   const active = document.querySelector(".time-node.active");
   if (active) updateTimeline(active);
   
-  // Update era label if exists
   if (userEra) {
     const badge = document.getElementById('userEraBadge');
     const eraName = language === 'ar' ? userEra.nameAr : userEra.name;
@@ -1046,7 +1032,6 @@ function init3D() {
   controls.maxDistance = 20;
   controls.target.set(0, 0, 0);
 
-  // Lights
   const ambientLight = new THREE.AmbientLight(0x404060, 0.5);
   scene.add(ambientLight);
 
@@ -1067,15 +1052,11 @@ function init3D() {
   pointLight.position.set(0, 3, 0);
   scene.add(pointLight);
 
-  // Grid
   const gridHelper = new THREE.GridHelper(10, 20, 0x79f7c8, 0x1a2a33);
   gridHelper.position.y = -0.5;
   scene.add(gridHelper);
 
-  // Background particles
   createParticles();
-
-  // Build initial model
   buildPentiumModel();
 
   animate();
@@ -1487,20 +1468,24 @@ document.querySelectorAll(".exhibit-image img").forEach((img) => {
 });
 
 // ========================================
-// ✨ NEW FEATURES: CONTINUE TO TOP, SOUNDS, WIN98 SIMULATOR// ========================================
+// ✨ NEW FEATURES: CONTINUE TO TOP, SOUNDS, WIN98 SIMULATOR
+// ========================================
 
 // ========================================
 // 1. CONTINUE TO MUSEUM - SCROLL TO TOP
 // ========================================
 
-document.getElementById('continueBtn').addEventListener('click', function(e) {
-  setTimeout(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, 100);
-});
+const continueBtn = document.getElementById('continueBtn');
+if (continueBtn) {
+  continueBtn.addEventListener('click', function(e) {
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+  });
+}
 
 // ========================================
-// 2. SOUNDS SECTION
+// 2. SOUNDS SECTION - WITH REAL AUDIO FILES
 // ========================================
 
 let audioCtx = null;
@@ -1512,102 +1497,96 @@ function getAudioContext() {
   return audioCtx;
 }
 
-// Dial-up Internet Sound
-function playDialupSound() {
-  const ctx = getAudioContext();
-  const duration = 3.5;
-  const startTime = ctx.currentTime;
-  
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(200, startTime);
-  osc.frequency.linearRampToValueAtTime(800, startTime + 0.5);
-  osc.frequency.linearRampToValueAtTime(400, startTime + 1.0);
-  osc.frequency.linearRampToValueAtTime(1200, startTime + 1.5);
-  osc.frequency.linearRampToValueAtTime(600, startTime + 2.0);
-  osc.frequency.linearRampToValueAtTime(900, startTime + 2.5);
-  osc.frequency.linearRampToValueAtTime(300, startTime + 3.0);
-  osc.frequency.linearRampToValueAtTime(0, startTime + duration);
-  
-  gain.gain.setValueAtTime(0.3, startTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
-  
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  
-  osc.start(startTime);
-  osc.stop(startTime + duration);
+// Play sound from file
+function playSoundFile(filename, volume = 0.5) {
+  try {
+    const audio = new Audio();
+    audio.src = filename;
+    audio.volume = volume;
+    audio.play().catch(e => {
+      console.warn('Sound file not found, using fallback:', e);
+      playFallbackSound(filename);
+    });
+  } catch (e) {
+    console.warn('Error playing sound, using fallback:', e);
+    playFallbackSound(filename);
+  }
 }
 
-// Windows XP Startup Sound
-function playWinXPSound() {
+// Fallback: Use synthetic sounds if files are missing
+function playFallbackSound(soundName) {
   const ctx = getAudioContext();
   const startTime = ctx.currentTime;
   
-  const notes = [523, 659, 784, 1047];
-  notes.forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.2, startTime + i * 0.15);
-    gain.gain.exponentialRampToValueAtTime(0.01, startTime + i * 0.15 + 0.3);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(startTime + i * 0.15);
-    osc.stop(startTime + i * 0.15 + 0.3);
-  });
-}
-
-// Windows 98 Shutdown Sound
-function playWin98Shutdown() {
-  const ctx = getAudioContext();
-  const startTime = ctx.currentTime;
-  
-  const notes = [440, 349, 294, 247];
-  notes.forEach((freq, i) => {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.15, startTime + i * 0.2);
-    gain.gain.exponentialRampToValueAtTime(0.01, startTime + i * 0.2 + 0.4);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(startTime + i * 0.2);
-    osc.stop(startTime + i * 0.2 + 0.4);
-  });
-}
-
-// Windows Error Sound
-function playWindowsError() {
-  const ctx = getAudioContext();
-  const startTime = ctx.currentTime;
-  
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.type = 'square';
-  osc.frequency.setValueAtTime(300, startTime);
-  osc.frequency.setValueAtTime(200, startTime + 0.15);
-  osc.frequency.setValueAtTime(150, startTime + 0.3);
-  
-  gain.gain.setValueAtTime(0.2, startTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
-  
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.start(startTime);
-  osc.stop(startTime + 0.5);
+  switch(soundName) {
+    case 'dialup.mp3':
+      const osc1 = ctx.createOscillator();
+      const gain1 = ctx.createGain();
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(400, startTime);
+      osc1.frequency.linearRampToValueAtTime(800, startTime + 0.5);
+      osc1.frequency.linearRampToValueAtTime(300, startTime + 1.0);
+      gain1.gain.setValueAtTime(0.2, startTime);
+      gain1.gain.exponentialRampToValueAtTime(0.01, startTime + 1.5);
+      osc1.connect(gain1);
+      gain1.connect(ctx.destination);
+      osc1.start(startTime);
+      osc1.stop(startTime + 1.5);
+      break;
+      
+    case 'winxp.mp3':
+      [523, 659, 784, 1047].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.15, startTime + i * 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + i * 0.15 + 0.3);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime + i * 0.15);
+        osc.stop(startTime + i * 0.15 + 0.3);
+      });
+      break;
+      
+    case 'win98shutdown.mp3':
+      [440, 349, 294, 247].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.12, startTime + i * 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + i * 0.2 + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime + i * 0.2);
+        osc.stop(startTime + i * 0.2 + 0.4);
+      });
+      break;
+      
+    case 'winerror.mp3':
+      const oscE = ctx.createOscillator();
+      const gainE = ctx.createGain();
+      oscE.type = 'square';
+      oscE.frequency.setValueAtTime(300, startTime);
+      oscE.frequency.setValueAtTime(200, startTime + 0.15);
+      oscE.frequency.setValueAtTime(150, startTime + 0.3);
+      gainE.gain.setValueAtTime(0.15, startTime);
+      gainE.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
+      oscE.connect(gainE);
+      gainE.connect(ctx.destination);
+      oscE.start(startTime);
+      oscE.stop(startTime + 0.5);
+      break;
+  }
 }
 
 // Sound mapping
 const soundMap = {
-  'dialup': playDialupSound,
-  'winxp': playWinXPSound,
-  'win98shutdown': playWin98Shutdown,
-  'winsound': playWindowsError
+  'dialup': () => playSoundFile('dialup.mp3', 0.6),
+  'winxp': () => playSoundFile('winxp.mp3', 0.5),
+  'win98shutdown': () => playSoundFile('win98shutdown.mp3', 0.4),
+  'winsound': () => playSoundFile('winerror.mp3', 0.5)
 };
 
 // Sound buttons
@@ -1635,7 +1614,6 @@ document.querySelectorAll('.play-sound').forEach(btn => {
 
 const win98Modal = document.getElementById('win98Modal');
 const win98Close = document.getElementById('win98Close');
-const win98Desktop = document.getElementById('win98Desktop');
 const win98StartBtn = document.getElementById('win98StartBtn');
 const win98StartMenu = document.getElementById('win98StartMenu');
 const win98Folder = document.getElementById('win98Folder');
@@ -1661,9 +1639,9 @@ function openWin98() {
   if (!win98Modal) return;
   win98Modal.showModal();
   win98Open = true;
-  win98StartMenu.style.display = 'none';
-  win98Folder.style.display = 'none';
-  playWinXPSound();
+  if (win98StartMenu) win98StartMenu.style.display = 'none';
+  if (win98Folder) win98Folder.style.display = 'none';
+  playSoundFile('winxp.mp3', 0.5);
 }
 
 // Close Windows 98
@@ -1671,7 +1649,7 @@ function closeWin98() {
   if (!win98Modal) return;
   win98Modal.close();
   win98Open = false;
-  playWin98Shutdown();
+  playSoundFile('win98shutdown.mp3', 0.4);
 }
 
 // Open folder
@@ -1721,8 +1699,8 @@ function openFolder(folder) {
     `<div class="win98-folder-item">${item}</div>`
   ).join('') || '<div class="win98-folder-item">📁 Empty folder</div>';
   
-  win98Folder.style.display = 'flex';
-  win98StartMenu.style.display = 'none';
+  if (win98Folder) win98Folder.style.display = 'flex';
+  if (win98StartMenu) win98StartMenu.style.display = 'none';
 }
 
 // Close folder
@@ -1731,15 +1709,13 @@ function closeFolder() {
   win98Folder.style.display = 'none';
 }
 
-// Event Listeners for Windows 98
-
 // Launch from laptop click
 function launchWin98() {
   if (!win98Open) {
     openWin98();
-    setTimeout(playDialupSound, 300);
+    setTimeout(() => playSoundFile('dialup.mp3', 0.6), 300);
   } else {
-    win98Modal.showModal();
+    if (win98Modal) win98Modal.showModal();
   }
 }
 
