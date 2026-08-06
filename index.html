@@ -1,467 +1,357 @@
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-  <meta name="theme-color" content="#0b0f14" />
-  <meta name="description" content="Digital Computer Museum - An interactive journey through computing history from 1940 to 2026." />
-  <meta name="keywords" content="computer museum, vintage tech, retro computing, 3D, AI, Intel, Windows, floppy disk" />
-  <meta name="author" content="Saeed Bin Ishaq - IT Client Excellence Team" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+// ========================================
+// CONTINUE TO MUSEUM - SCROLL TO TOP
+// ========================================
+
+document.getElementById('continueBtn').addEventListener('click', function(e) {
+  // The modal will close and scroll to top
+  setTimeout(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 100);
+});
+
+// ========================================
+// SOUNDS SECTION
+// ========================================
+
+// Create audio context for sounds
+let audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return audioCtx;
+}
+
+// Generate synthetic sounds (since we can't load real audio files)
+function playDialupSound() {
+  const ctx = getAudioContext();
+  const duration = 3.5;
+  const startTime = ctx.currentTime;
   
-  <meta property="og:title" content="Digital Computer Museum" />
-  <meta property="og:description" content="Explore vintage computers, software, and processors from 1940 to 2026 with 3D interaction." />
-  <meta property="og:image" content="collection-top.jpeg" />
+  // Create oscillator for the dialup sound
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
   
-  <title>Digital Computer Museum | 1940-2026 3D Experience</title>
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(200, startTime);
+  osc.frequency.linearRampToValueAtTime(800, startTime + 0.5);
+  osc.frequency.linearRampToValueAtTime(400, startTime + 1.0);
+  osc.frequency.linearRampToValueAtTime(1200, startTime + 1.5);
+  osc.frequency.linearRampToValueAtTime(600, startTime + 2.0);
+  osc.frequency.linearRampToValueAtTime(900, startTime + 2.5);
+  osc.frequency.linearRampToValueAtTime(300, startTime + 3.0);
+  osc.frequency.linearRampToValueAtTime(0, startTime + duration);
   
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  gain.gain.setValueAtTime(0.3, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
   
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%23080b0f' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='68' text-anchor='middle' fill='%2379f7c8' font-size='42' font-family='monospace' font-weight='bold'%3EDCM%3C/text%3E%3C/svg%3E">
-</head>
-<body>
-  <!-- Loading Screen -->
-  <div id="loadingScreen" class="loading-screen">
-    <div class="loading-content">
-      <div class="time-travel-animation">
-        <div class="time-travel-scene">
-          <div class="retro-computer">
-            <div class="monitor">
-              <div class="screen-content">
-                <div class="boot-text">DIGITAL COMPUTER MUSEUM</div>
-                <div class="boot-text delay1">INITIALIZING TIME TRAVEL...</div>
-                <div class="boot-text delay2">LOADING COLLECTION...</div>
-                <div class="boot-text delay3">TRANSPORTING TO 2026...</div>
-                <div class="boot-cursor"></div>
-              </div>
-            </div>
-            <div class="keyboard">
-              <span></span><span></span><span></span><span></span>
-              <span></span><span></span><span></span><span></span>
-              <span></span><span></span><span></span><span></span>
-            </div>
-          </div>
-          <div class="time-portal">
-            <div class="portal-ring"></div>
-            <div class="portal-ring ring2"></div>
-            <div class="portal-ring ring3"></div>
-            <div class="portal-center"></div>
-          </div>
-          <div class="time-particles">
-            <span>1940</span><span>1950</span><span>1960</span><span>1970</span>
-            <span>1980</span><span>1990</span><span>2000</span><span>2026</span>
-          </div>
-        </div>
-      </div>
-      <div class="loading-bar">
-        <div class="loading-progress" id="loadingProgress"></div>
-      </div>
-      <p class="loading-text" id="loadingText">Loading experience...</p>
-      <span class="loading-percent" id="loadingPercent">0%</span>
-    </div>
-  </div>
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  
+  osc.start(startTime);
+  osc.stop(startTime + duration);
+}
 
-  <!-- Birth Year Modal -->
-  <div id="birthYearOverlay" class="birth-overlay">
-    <div class="birth-modal">
-      <div class="birth-icon">🎂</div>
-      <h2 data-ar="في أي عام وُلدت؟" data-en="What year were you born?">What year were you born?</h2>
-      <p data-ar="أدخل سنة ميلادك (1940-2026) لنعرض لك أبرز إنجازات الحوسبة وحقبتك!" data-en="Enter your birth year (1940-2026) to discover computing milestones and your era!">Enter your birth year (1940-2026) to discover computing milestones and your era!</p>
-      <div class="birth-input-group">
-        <input type="number" id="birthYearInput" placeholder="e.g. 1985" min="1940" max="2026" />
-        <button id="birthYearBtn" class="primary-btn">🚀 <span data-ar="استكشف" data-en="Explore">Explore</span></button>
-      </div>
-      <div class="birth-year-hint">
-        <small data-ar="أدخل سنة بين 1940 و 2026" data-en="Enter a year between 1940 and 2026">Enter a year between 1940 and 2026</small>
-      </div>
-      <div id="birthResult" class="birth-result hidden">
-        <div class="result-icon" id="resultIcon">🖥️</div>
-        <h3 id="resultTitle">Welcome to the digital age!</h3>
-        <p id="resultDesc">Discover what was happening in computing the year you were born.</p>
-        <div class="result-year-badge" id="resultYear">1985</div>
-        <div class="result-era" id="resultEra">
-          <span class="era-label">💫 Your Computing Era</span>
-          <span class="era-name" id="eraName">The Personal Computer Era</span>
-          <span class="era-years" id="eraYears">1980 — 1989</span>
-        </div>
-        <button class="secondary-btn continue-btn" id="continueBtn">
-          <span data-ar="استمر إلى المتحف" data-en="Continue to museum">Continue to museum</span> →
-        </button>
-      </div>
-    </div>
-  </div>
+function playWinXPSound() {
+  const ctx = getAudioContext();
+  const startTime = ctx.currentTime;
+  
+  // Windows XP startup sound (simplified)
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.2, startTime + i * 0.15);
+    gain.gain.exponentialRampToValueAtTime(0.01, startTime + i * 0.15 + 0.3);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startTime + i * 0.15);
+    osc.stop(startTime + i * 0.15 + 0.3);
+  });
+}
 
-  <div class="cursor-glow" aria-hidden="true"></div>
+function playWin98Shutdown() {
+  const ctx = getAudioContext();
+  const startTime = ctx.currentTime;
+  
+  // Windows 98 shutdown sound (simplified)
+  const notes = [440, 349, 294, 247];
+  notes.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.15, startTime + i * 0.2);
+    gain.gain.exponentialRampToValueAtTime(0.01, startTime + i * 0.2 + 0.4);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startTime + i * 0.2);
+    osc.stop(startTime + i * 0.2 + 0.4);
+  });
+}
 
-  <header class="topbar">
-    <a class="brand" href="#home" aria-label="Back to home">
-      <span class="brand-mark">DCM</span>
-      <span>
-        <strong>Digital Computer Museum</strong>
-        <small>1940 — 2026</small>
-      </span>
-    </a>
+function playWindowsError() {
+  const ctx = getAudioContext();
+  const startTime = ctx.currentTime;
+  
+  // Windows error sound
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(300, startTime);
+  osc.frequency.setValueAtTime(200, startTime + 0.15);
+  osc.frequency.setValueAtTime(150, startTime + 0.3);
+  
+  gain.gain.setValueAtTime(0.2, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
+  
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(startTime);
+  osc.stop(startTime + 0.5);
+}
 
-    <nav class="desktop-nav" aria-label="Main navigation">
-      <a href="#collection">Collection</a>
-      <a href="#timeline">Timeline</a>
-      <a href="#experience">Experience</a>
-      <a href="#model3d">3D</a>
-    </nav>
+// Sound mapping
+const soundMap = {
+  'dialup': playDialupSound,
+  'winxp': playWinXPSound,
+  'win98shutdown': playWin98Shutdown,
+  'winsound': playWindowsError
+};
 
-    <div class="header-actions">
-      <button class="icon-btn" id="soundToggle" aria-label="Toggle sound effects">🔊</button>
-      <button class="lang-btn" id="langToggle">AR</button>
-    </div>
-  </header>
-
-  <main>
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-      <div class="grid-lines" aria-hidden="true"></div>
-      <div class="hero-content reveal">
-        <p class="eyebrow" data-ar="رحلة تفاعلية عبر تاريخ التقنية 1940-2026" data-en="An interactive journey through technology history 1940-2026">An interactive journey through technology history 1940-2026</p>
-        <h1 data-ar="اقترب أكثر.<br><span>اكتشف القصة.</span>" data-en="Look closer.<br><span>Discover the story.</span>">Look closer.<br><span>Discover the story.</span></h1>
-        <p class="hero-text" data-ar="استكشف مجموعة نادرة من الأقراص والبرامج والمعالجات والأجهزة القديمة مع تقنية 3D." data-en="Explore a rare collection of vintage software, processors, disks, and computers with 3D technology.">
-          Explore a rare collection of vintage software, processors, disks, and computers with 3D technology.
-        </p>
-        <div class="hero-buttons">
-          <a class="primary-btn" href="#collection"><span data-ar="ابدأ الجولة" data-en="Start the tour">Start the tour</span><b>↓</b></a>
-          <button class="secondary-btn" id="introBtn"><span class="play">▶</span><span data-ar="شاهد المقدمة" data-en="Watch intro">Watch intro</span></button>
-        </div>
-      </div>
-
-      <div class="hero-visual reveal">
-        <div class="orbit orbit-one"></div>
-        <div class="orbit orbit-two"></div>
-        <div class="artifact-card tilt-card">
-          <div class="artifact-badge">01 / 02</div>
-          <img src="collection-laptop.jpeg" alt="Vintage Toshiba laptop" loading="lazy" decoding="async" />
-          <div class="scan-line"></div>
-          <div class="artifact-caption">
-            <span data-ar="المجموعة الرئيسية" data-en="Main collection">Main collection</span>
-            <strong>1990s — 2000s</strong>
-          </div>
-        </div>
-        <div class="floating-chip chip-one">WINDOWS 98</div>
-        <div class="floating-chip chip-two">PENTIUM II</div>
-        <div class="floating-chip chip-three">3.5″ FLOPPY</div>
-      </div>
-
-      <div class="scroll-cue"><span></span><small data-ar="اسحب للأسفل" data-en="Scroll down">Scroll down</small></div>
-    </section>
-
-    <section class="stats-band">
-      <div><strong>02</strong><span data-ar="واجهات عرض" data-en="Display shelves">Display shelves</span></div>
-      <div><strong>13+</strong><span data-ar="قطع تاريخية" data-en="Historic artifacts">Historic artifacts</span></div>
-      <div><strong>86+</strong><span data-ar="سنة من التقنية" data-en="Years of technology">Years of technology</span></div>
-      <div><strong>3D</strong><span data-ar="استكشاف ثلاثي الأبعاد" data-en="3D Exploration">3D Exploration</span></div>
-    </section>
-
-    <!-- Collection Section -->
-    <section class="section collection-section" id="collection">
-      <div class="section-heading reveal">
-        <div>
-          <p class="eyebrow" data-ar="استكشف الواجهات" data-en="Explore the displays">Explore the displays</p>
-          <h2 data-ar="المجموعة الرقمية" data-en="The digital collection">The digital collection</h2>
-        </div>
-        <p data-ar="اضغط على النقاط المضيئة للتعرّف على القطع." data-en="Tap the glowing hotspots to discover each item.">
-          Tap the glowing hotspots to discover each item.
-        </p>
-      </div>
-
-      <article class="exhibit reveal" data-exhibit="software">
-        <div class="exhibit-image zoomable">
-          <img src="collection-top.jpeg" alt="Vintage software collection" loading="lazy" decoding="async" />
-          <button class="hotspot" style="--x:65%;--y:59%" data-item="pentium" aria-label="Intel Pentium II" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">1</span>
-            <span class="sr-only">Intel Pentium II</span>
-          </button>
-          <button class="hotspot" style="--x:77%;--y:50%" data-item="floppy" aria-label="3.5 inch floppy" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">2</span>
-            <span class="sr-only">3.5 inch floppy</span>
-          </button>
-          <button class="hotspot" style="--x:38%;--y:55%" data-item="zoomdisk" aria-label="5.25 inch floppy" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">3</span>
-            <span class="sr-only">5.25 inch floppy</span>
-          </button>
-          <button class="hotspot" style="--x:61%;--y:30%" data-item="calendar" aria-label="Vintage calendar" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">4</span>
-            <span class="sr-only">Vintage calendar</span>
-          </button>
-          <button class="hotspot" style="--x:20%;--y:45%" data-item="msdos" aria-label="MS-DOS 6.22" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">5</span>
-            <span class="sr-only">MS-DOS 6.22</span>
-          </button>
-          <button class="hotspot" style="--x:90%;--y:70%" data-item="ps2" aria-label="IBM PS/2" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">6</span>
-            <span class="sr-only">IBM PS/2</span>
-          </button>
-          <button class="explore-btn" data-image="collection-top.jpeg" data-title="Software & Processor Collection">⛶ <span data-ar="وضع الاستكشاف" data-en="Explore view">Explore view</span></button>
-        </div>
-        <div class="exhibit-copy">
-          <span class="index">01</span>
-          <h3 data-ar="البرمجيات والمعالجات" data-en="Software & processors">Software & processors</h3>
-          <p data-ar="مجموعة متنوعة من وسائط التخزين القديمة، المعالجات، وأنظمة التشغيل." data-en="A diverse collection of vintage storage media, processors, and operating systems.">
-            A diverse collection of vintage storage media, processors, and operating systems.
-          </p>
-          <button class="text-link story-btn" data-story="software"><span data-ar="اكتشف القصة" data-en="Discover the story">Discover the story</span> ↗</button>
-        </div>
-      </article>
-
-      <article class="exhibit reverse reveal" data-exhibit="laptop">
-        <div class="exhibit-image zoomable">
-          <img src="collection-laptop.jpeg" alt="Toshiba Satellite laptop" loading="lazy" decoding="async" />
-          <button class="hotspot" style="--x:50%;--y:62%" data-item="toshiba" aria-label="Toshiba Satellite" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">1</span>
-            <span class="sr-only">Toshiba Satellite</span>
-          </button>
-          <button class="hotspot" style="--x:14%;--y:59%" data-item="windows98" aria-label="Windows 98" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">2</span>
-            <span class="sr-only">Windows 98</span>
-          </button>
-          <button class="hotspot" style="--x:80%;--y:55%" data-item="office97" aria-label="Office 97" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">3</span>
-            <span class="sr-only">Office 97</span>
-          </button>
-          <button class="hotspot" style="--x:70%;--y:69%" data-item="access" aria-label="Windows 95 Access Kit" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">4</span>
-            <span class="sr-only">Windows 95 Access Kit</span>
-          </button>
-          <button class="hotspot" style="--x:30%;--y:50%" data-item="winnt" aria-label="Windows NT 4.0" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">5</span>
-            <span class="sr-only">Windows NT 4.0</span>
-          </button>
-          <button class="hotspot" style="--x:45%;--y:40%" data-item="win2000" aria-label="Windows 2000" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">6</span>
-            <span class="sr-only">Windows 2000</span>
-          </button>
-          <button class="hotspot" style="--x:25%;--y:70%" data-item="msfloppy" aria-label="MS Installation Floppy" role="button" tabindex="0">
-            <i aria-hidden="true"></i><span aria-hidden="true">7</span>
-            <span class="sr-only">MS Installation Floppy</span>
-          </button>
-          <button class="explore-btn" data-image="collection-laptop.jpeg" data-title="Toshiba & Microsoft Collection">⛶ <span data-ar="وضع الاستكشاف" data-en="Explore view">Explore view</span></button>
-        </div>
-        <div class="exhibit-copy">
-          <span class="index">02</span>
-          <h3 data-ar="حقبة الحاسب المحمول" data-en="The laptop era">The laptop era</h3>
-          <p data-ar="حاسوب Toshiba Satellite محاط بإصدارات Microsoft التاريخية." data-en="A Toshiba Satellite surrounded by historic Microsoft releases.">
-            A Toshiba Satellite surrounded by historic Microsoft releases.
-          </p>
-          <button class="text-link story-btn" data-story="laptop"><span data-ar="اكتشف القصة" data-en="Discover the story">Discover the story</span> ↗</button>
-        </div>
-      </article>
-    </section>
-
-    <!-- Timeline Section -->
-    <section class="section timeline-section" id="timeline">
-      <div class="section-heading reveal">
-        <div>
-          <p class="eyebrow" data-ar="خط زمني مختصر 1940-2026" data-en="A brief timeline 1940-2026">A brief timeline 1940-2026</p>
-          <h2 data-ar="كيف تغيّرت الحوسبة؟" data-en="How computing evolved">How computing evolved</h2>
-        </div>
-        <div id="userEraIndicator" class="user-era-indicator" style="display:none;">
-          <span class="user-era-badge" id="userEraBadge">📍 Your Era</span>
-        </div>
-      </div>
-
-      <div class="timeline reveal" id="timelineContainer">
-        <div class="timeline-progress" id="timelineProgress"></div>
-        
-        <button class="time-node active" data-year="1940" data-title-ar="بداية الحوسبة" data-title-en="Beginning of Computing" data-desc-ar="بداية عصر الحوسبة الحديثة مع الحواسيب الأولى." data-desc-en="The beginning of the modern computing era with the first computers.">
-          <b>1940</b><span></span>
-        </button>
-        <button class="time-node" data-year="1945" data-title-ar="ENIAC" data-title-en="ENIAC" data-desc-ar="أول حاسوب إلكتروني رقمي للأغراض العامة." data-desc-en="First electronic general-purpose computer.">
-          <b>1945</b><span></span>
-        </button>
-        <button class="time-node" data-year="1956" data-title-ar="أول قرص صلب" data-title-en="First Hard Disk" data-desc-ar="IBM 305 RAMAC أول قرص صلب بسعة 5 ميجابايت." data-desc-en="IBM 305 RAMAC first hard disk with 5MB storage.">
-          <b>1956</b><span></span>
-        </button>
-        <button class="time-node" data-year="1964" data-title-ar="IBM System/360" data-title-en="IBM System/360" data-desc-ar="ثورة في الحواسيب المؤسسية." data-desc-en="Revolutionized enterprise computing.">
-          <b>1964</b><span></span>
-        </button>
-        <button class="time-node" data-year="1971" data-title-ar="Intel 4004" data-title-en="Intel 4004" data-desc-ar="أول معالج دقيق في العالم." data-desc-en="World's first microprocessor.">
-          <b>1971</b><span></span>
-        </button>
-        <button class="time-node" data-year="1975" data-title-ar="Microsoft" data-title-en="Microsoft" data-desc-ar="تأسيس Microsoft على يد بيل غيتس وبول ألن." data-desc-en="Microsoft founded by Bill Gates and Paul Allen.">
-          <b>1975</b><span></span>
-        </button>
-        <button class="time-node" data-year="1981" data-title-ar="IBM PC" data-title-en="IBM PC" data-desc-ar="أول حاسوب شخصي من IBM." data-desc-en="IBM's first personal computer.">
-          <b>1981</b><span></span>
-        </button>
-        <button class="time-node" data-year="1985" data-title-ar="Windows 1.0" data-title-en="Windows 1.0" data-desc-ar="أول إصدار من Windows." data-desc-en="First Windows release.">
-          <b>1985</b><span></span>
-        </button>
-        <button class="time-node" data-year="1995" data-title-ar="Windows 95" data-title-en="Windows 95" data-desc-ar="ثورة في واجهة المستخدم." data-desc-en="Revolutionary UI.">
-          <b>1995</b><span></span>
-        </button>
-        <button class="time-node" data-year="2000" data-title-ar="Windows 2000" data-title-en="Windows 2000" data-desc-ar="نظام تشغيل مهني مستقر." data-desc-en="Stable professional OS.">
-          <b>2000</b><span></span>
-        </button>
-        <button class="time-node" data-year="2010" data-title-ar="iPad & Cloud" data-title-en="iPad & Cloud" data-desc-ar="ظهور الأجهزة اللوحية والحوسبة السحابية." data-desc-en="Tablets and cloud computing emerge.">
-          <b>2010</b><span></span>
-        </button>
-        <button class="time-node" data-year="2020" data-title-ar="AI Revolution" data-title-en="AI Revolution" data-desc-ar="ثورة الذكاء الاصطناعي والتعلم العميق." data-desc-en="AI and deep learning revolution.">
-          <b>2020</b><span></span>
-        </button>
-        <button class="time-node" data-year="2026" data-title-ar="AI & Quantum" data-title-en="AI & Quantum" data-desc-ar="عصر الذكاء الاصطناعي والحوسبة الكمومية." data-desc-en="The era of AI and quantum computing.">
-          <b>2026</b><span></span>
-        </button>
-      </div>
-
-      <div class="timeline-detail reveal">
-        <span id="timelineYear">1940</span>
-        <div>
-          <h3 id="timelineTitle">Beginning of Computing</h3>
-          <p id="timelineDesc">The beginning of the modern computing era with the first computers.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 3D Model Section -->
-    <section class="section model3d-section" id="model3d">
-      <div class="section-heading reveal">
-        <div>
-          <p class="eyebrow" data-ar="عرض ثلاثي الأبعاد" data-en="3D Experience">3D Experience</p>
-          <h2 data-ar="شاهد القطع في <span>ثلاثي الأبعاد</span>" data-en="Explore artifacts in <span>3D</span>">Explore artifacts in <span>3D</span></h2>
-        </div>
-        <p data-ar="اسحب النموذج ثلاثي الأبعاد للتدوير، واستخدم عجلة الماوس أو الإصبعين للتكبير." data-en="Drag the 3D model to rotate, use mouse wheel or pinch to zoom.">
-          Drag the 3D model to rotate, use mouse wheel or pinch to zoom.
-        </p>
-      </div>
+// Sound buttons
+document.querySelectorAll('.play-sound').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const sound = this.dataset.sound;
+    const playFn = soundMap[sound];
+    if (playFn) {
+      // Visual feedback
+      this.classList.add('playing');
+      this.innerHTML = '<span class="play-icon">⏹</span> <span data-ar="تشغيل" data-en="Playing...">Playing...</span>';
       
-      <div class="model-container reveal">
-        <div class="model-viewer-wrapper">
-          <div id="threeContainer" class="three-container"></div>
-          
-          <div class="model-controls">
-            <button class="model-control-btn" id="resetCamera" title="Reset View" aria-label="Reset Camera">⟲</button>
-            <button class="model-control-btn" id="autoRotateBtn" title="Auto Rotate" aria-label="Toggle Auto Rotate">🔄</button>
-            <button class="model-control-btn" id="fullscreenBtn" title="Fullscreen" aria-label="Toggle Fullscreen">⛶</button>
-            <button class="model-control-btn" id="enhancedViewBtn" title="Enhanced View" aria-label="Enhanced View">✨</button>
-          </div>
-          
-          <div class="model-info">
-            <p class="model-name" id="modelName">Intel Pentium II</p>
-            <p class="model-year" id="modelYear">1997</p>
-            <div class="model-dots">
-              <span class="model-dot active" data-model="pentium3d"></span>
-              <span class="model-dot" data-model="floppy3d"></span>
-              <span class="model-dot" data-model="computer3d"></span>
-              <span class="model-dot" data-model="windows3d"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+      playFn();
+      
+      setTimeout(() => {
+        this.classList.remove('playing');
+        const isAr = document.body.classList.contains('ar');
+        this.innerHTML = `<span class="play-icon">▶</span> <span data-ar="تشغيل" data-en="Play">Play</span>`;
+      }, 3000);
+    }
+  });
+});
 
-    <!-- Experience Section -->
-    <section class="section experience-section" id="experience">
-      <div class="experience-panel reveal">
-        <div>
-          <p class="eyebrow" data-ar="تجربة الزائر" data-en="Visitor experience">Visitor experience</p>
-          <h2 data-ar="لا تكتفِ بالمشاهدة.<br>تفاعل مع التاريخ." data-en="Don't just look.<br>Interact with history.">Don't just look.<br>Interact with history.</h2>
-        </div>
-        <div class="feature-grid">
-          <div class="feature"><span>01</span><h3 data-ar="تكبير وتحريك" data-en="Zoom & pan">Zoom & pan</h3><p data-ar="افتح الصور بالحجم الكامل." data-en="Open full-size images.">Open full-size images.</p></div>
-          <div class="feature"><span>02</span><h3 data-ar="نقاط تفاعلية" data-en="Interactive hotspots">Interactive hotspots</h3><p data-ar="كل نقطة تكشف قصة قطعة." data-en="Each hotspot reveals a story.">Each hotspot reveals a story.</p></div>
-          <div class="feature"><span>03</span><h3 data-ar="نماذج 3D" data-en="3D Models">3D Models</h3><p data-ar="شاهد القطع بتقنية ثلاثية الأبعاد." data-en="View artifacts in 3D.">View artifacts in 3D.</p></div>
-          <div class="feature"><span>04</span><h3 data-ar="لغتان" data-en="Bilingual">Bilingual</h3><p data-ar="عربية وإنجليزية بضغطة." data-en="Arabic and English in one tap.">Arabic and English in one tap.</p></div>
-        </div>
-      </div>
-    </section>
+// ========================================
+// WINDOWS 98 SIMULATOR
+// ========================================
 
-    <!-- Quiz Section -->
-    <section class="quiz-section">
-      <div class="quiz-card reveal">
-        <div>
-          <p class="eyebrow" data-ar="اختبر معلوماتك" data-en="Test your knowledge">Test your knowledge</p>
-          <h2 data-ar="كم كانت سعة القرص المرن الشائع؟" data-en="What was the common floppy disk capacity?">What was the common floppy disk capacity?</h2>
-        </div>
-        <div class="quiz-options">
-          <button data-correct="false">720 KB</button>
-          <button data-correct="true">1.44 MB</button>
-          <button data-correct="false">100 MB</button>
-        </div>
-        <p class="quiz-result" aria-live="polite"></p>
-      </div>
-    </section>
-  </main>
+const win98Modal = document.getElementById('win98Modal');
+const win98Close = document.getElementById('win98Close');
+const win98Desktop = document.getElementById('win98Desktop');
+const win98StartBtn = document.getElementById('win98StartBtn');
+const win98StartMenu = document.getElementById('win98StartMenu');
+const win98Folder = document.getElementById('win98Folder');
+const win98FolderTitle = document.getElementById('win98FolderTitle');
+const win98FolderBody = document.getElementById('win98FolderBody');
+const win98FolderClose = document.getElementById('win98FolderClose');
+const win98Clock = document.getElementById('win98Clock');
+const win98Shutdown = document.getElementById('win98Shutdown');
 
-  <!-- Footer -->
-  <footer>
-    <div class="brand">
-      <span class="brand-mark">DCM</span>
-      <span>
-        <strong>Digital Computer Museum</strong>
-        <small>1940 — 2026</small>
-      </span>
-    </div>
-    <div class="footer-center">
-      <p data-ar="مجموعة خاصة محفوظة رقميًا للأجيال القادمة." data-en="A private collection, digitally preserved for future generations.">
-        A private collection, digitally preserved for future generations.
-      </p>
-      <div class="footer-credit">
-        <span class="credit-line">IT Client Excellence Team</span>
-        <span class="credit-divider">•</span>
-        <span class="credit-line">Developed by Saeed Bin Ishaq</span>
-      </div>
-    </div>
-    <a href="#home" aria-label="Back to top">↑</a>
-  </footer>
+let win98Open = false;
+let currentFolder = '';
 
-  <!-- Modals -->
-  <dialog id="itemModal" class="modal">
-    <button class="modal-close" aria-label="Close">×</button>
-    <div class="modal-visual">
-      <div class="modal-icon" id="modalIcon">💾</div>
-      <span id="modalEra">1990s</span>
-    </div>
-    <div class="modal-body">
-      <p class="eyebrow" id="modalType">ARTIFACT 01</p>
-      <h2 id="modalTitle">Intel Pentium II</h2>
-      <p id="modalDescription"></p>
-      <div class="facts" id="modalFacts"></div>
-    </div>
-  </dialog>
+// Update clock
+function updateWin98Clock() {
+  const now = new Date();
+  win98Clock.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+updateWin98Clock();
+setInterval(updateWin98Clock, 30000);
 
-  <dialog id="viewerModal" class="viewer-modal">
-    <button class="viewer-close" aria-label="Close">×</button>
-    <div class="viewer-toolbar">
-      <span id="viewerTitle"></span>
-      <small data-ar="استخدم الإصبعين أو عجلة الماوس للتكبير" data-en="Pinch or use the mouse wheel to zoom">Pinch or use the mouse wheel to zoom</small>
-    </div>
-    <div class="viewer-stage" id="viewerStage">
-      <img id="viewerImage" alt="" draggable="false" />
-    </div>
-    <div class="zoom-controls">
-      <button id="zoomOut">−</button>
-      <button id="zoomReset">100%</button>
-      <button id="zoomIn">+</button>
-    </div>
-  </dialog>
+// Open Windows 98
+function openWin98() {
+  win98Modal.showModal();
+  win98Open = true;
+  win98StartMenu.style.display = 'none';
+  win98Folder.style.display = 'none';
+  playWinXPSound();
+}
 
-  <dialog id="introModal" class="intro-modal">
-    <button class="modal-close" aria-label="Close">×</button>
-    <div class="intro-animation">
-      <div class="retro-screen">
-        <div class="boot-line">DIGITAL COMPUTER MUSEUM</div>
-        <div class="boot-line delay-1">LOADING COLLECTION...</div>
-        <div class="boot-line delay-2">READY.</div>
-        <div class="boot-cursor"></div>
-      </div>
-    </div>
-    <h2 data-ar="مرحبًا بك في رحلة عبر تاريخ الحاسب 1940-2026" data-en="Welcome to a journey through computing history 1940-2026">Welcome to a journey through computing history 1940-2026</h2>
-    <p data-ar="اضغط على القطع، كبّر الصور، واستكشف النماذج ثلاثية الأبعاد." data-en="Tap the artifacts, zoom into the images, and explore 3D models.">Tap the artifacts, zoom into the images, and explore 3D models.</p>
-  </dialog>
+// Close Windows 98
+function closeWin98() {
+  win98Modal.close();
+  win98Open = false;
+  playWin98Shutdown();
+}
 
-  <!-- Three.js Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="script.js"></script>
-</body>
-</html>
+// Open folder
+function openFolder(folder) {
+  currentFolder = folder;
+  const titles = {
+    'mycomputer': 'My Computer',
+    'documents': 'My Documents',
+    'recycle': 'Recycle Bin',
+    'internet': 'Internet Explorer',
+    'games': 'Games'
+  };
+  
+  const contents = {
+    'mycomputer': [
+      '📁 Local Disk (C:)',
+      '📁 Local Disk (D:)',
+      '📁 3.5 Floppy (A:)',
+      '📁 Control Panel'
+    ],
+    'documents': [
+      '📄 My Resume.doc',
+      '📄 Project Plan.xls',
+      '📄 Letter to Mom.txt',
+      '📁 Downloads'
+    ],
+    'recycle': [
+      '🗑️ Old File.txt',
+      '🗑️ Deleted Photo.jpg',
+      '🗑️ Temporary Document.doc'
+    ],
+    'internet': [
+      '🌐 Internet Explorer',
+      '📧 Outlook Express',
+      '⭐ Favorites'
+    ],
+    'games': [
+      '🃏 Solitaire',
+      '🧩 Minesweeper',
+      '🖱️ Pinball'
+    ]
+  };
+  
+  win98FolderTitle.textContent = titles[folder] || 'Folder';
+  win98FolderBody.innerHTML = contents[folder]?.map(item => 
+    `<div class="win98-folder-item">${item}</div>`
+  ).join('') || '<div class="win98-folder-item">📁 Empty folder</div>';
+  
+  win98Folder.style.display = 'flex';
+  win98StartMenu.style.display = 'none';
+}
+
+// Close folder
+function closeFolder() {
+  win98Folder.style.display = 'none';
+}
+
+// Event Listeners for Windows 98
+
+// Launch from laptop click
+function launchWin98() {
+  if (!win98Open) {
+    openWin98();
+    // Play dialup sound for authentic experience
+    setTimeout(playDialupSound, 300);
+  } else {
+    // If already open, bring to front
+    win98Modal.showModal();
+  }
+}
+
+// Click on laptop image to launch Win98
+document.querySelectorAll('#laptopTrigger, #laptopClickArea').forEach(el => {
+  el.addEventListener('click', function(e) {
+    // Don't trigger if clicking on a hotspot or explore button
+    if (e.target.closest('.hotspot') || e.target.closest('.explore-btn')) return;
+    launchWin98();
+  });
+});
+
+// Launch button
+document.getElementById('launchWin98Btn').addEventListener('click', launchWin98);
+
+// Close button
+win98Close.addEventListener('click', closeWin98);
+
+// Click outside to close (but keep it usable)
+win98Modal.addEventListener('click', function(e) {
+  if (e.target === this) {
+    // Don't close on backdrop click for better UX
+  }
+});
+
+// Start button
+win98StartBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  if (win98StartMenu.style.display === 'block') {
+    win98StartMenu.style.display = 'none';
+  } else {
+    win98StartMenu.style.display = 'block';
+  }
+});
+
+// Start menu items
+document.querySelectorAll('.win98-start-item[data-folder]').forEach(item => {
+  item.addEventListener('click', function() {
+    const folder = this.dataset.folder;
+    openFolder(folder);
+  });
+});
+
+// Folder icons
+document.querySelectorAll('.win98-icon-item[data-folder]').forEach(item => {
+  item.addEventListener('click', function() {
+    const folder = this.dataset.folder;
+    openFolder(folder);
+  });
+});
+
+// Folder close
+win98FolderClose.addEventListener('click', closeFolder);
+
+// Shutdown
+win98Shutdown.addEventListener('click', function() {
+  if (confirm('Are you sure you want to shut down Windows 98?')) {
+    closeWin98();
+  }
+});
+
+// Close start menu when clicking elsewhere
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.win98-start-btn') && !e.target.closest('.win98-start-menu')) {
+    if (win98StartMenu) {
+      win98StartMenu.style.display = 'none';
+    }
+  }
+});
+
+// Keyboard shortcut: Win key to open Start menu
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Meta' || e.key === 'Windows') {
+    e.preventDefault();
+    if (win98StartMenu) {
+      win98StartMenu.style.display = win98StartMenu.style.display === 'block' ? 'none' : 'block';
+    }
+  }
+  if (e.key === 'Escape' && win98Open) {
+    closeWin98();
+  }
+});
+
+// ========================================
+// BIRTH YEAR MODAL - IMPROVED VISIBILITY
+// ========================================
+
+// Make the explore button more visible on mobile
+const birthInput = document.getElementById('birthYearInput');
+const birthBtn = document.getElementById('birthYearBtn');
+
+if (birthInput) {
+  birthInput.addEventListener('focus', function() {
+    // Scroll to make input visible on mobile
+    setTimeout(() => {
+      this.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  });
+}
+
+console.log('🎮 Windows 98 Simulator loaded!');
+console.log('🔊 Vintage sounds ready!');
+console.log('📱 Mobile optimized!');
